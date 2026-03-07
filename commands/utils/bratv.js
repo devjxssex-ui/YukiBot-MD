@@ -20,7 +20,7 @@ export default {
       let texto1 = user.metadatos || `ʏᴜᴋɪ 🧠 Wᴀʙᴏᴛ'ꜱ`
       let texto2 = user.metadatos2 || `@${name}`
       const videoBuffer = await fetchStickerVideo(text)
-      const tmpFile = `./tmp-${Date.now()}.mp4`
+      const tmpFile = `./tmp/bratv-${Date.now()}.mp4`
       await fs.writeFileSync(tmpFile, videoBuffer)
       await client.sendVideoAsSticker(m.chat, tmpFile, m, { packname: texto1, author: texto2 })
       await fs.unlinkSync(tmpFile)
