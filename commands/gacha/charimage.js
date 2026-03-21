@@ -2,16 +2,6 @@ import axios from 'axios';
 import { promises as fs } from 'fs';
 
 const FILE_PATH = './lib/characters.json';
-const rollLocks = new Map();
-
-function cleanOldLocks() {
-  const now = Date.now();
-  for (const [userId, lockTime] of rollLocks.entries()) {
-    if (now - lockTime > 30000) {
-      rollLocks.delete(userId);
-    }
-  }
-}
 
 async function loadCharacters() {
   try {
@@ -67,73 +57,40 @@ async function buscarImagenDelirius(tag) {
 }
 
 export default {
-  command: ['rollwaifu', 'rw', 'roll'],
+  command: ['charimage', 'waifuimage', 'cimage', 'wimage'],
   category: 'gacha',
   run: async (client, m, args, usedPrefix, command) => {
-    const userId = m.sender;
-    const chatId = m.chat;
-    cleanOldLocks();
-    if (rollLocks.has(userId)) {
-      const lockTime = rollLocks.get(userId);
-      const now = Date.now();
-      if (now - lockTime < 15000) return;
-      rollLocks.delete(userId);
-    }
-    const chats = global.db.data.chats;
-    const chat = chats[chatId];
-    if (chat.adminonly || !chat.gacha) {
-      return m.reply(`ꕥ Los comandos de *Gacha* están desactivados en este grupo.\n\nUn *administrador* puede activarlos con el comando:\n» *${usedPrefix}gacha on*`);
-    }
-    if (!chat.users) chat.users = {};
-    if (!chat.users[userId]) chat.users[userId] = {};
-    if (!chat.characters) chat.characters = {};
-    chat.rolls ||= {};
-    const me = chat.users[userId];
-    const now = Date.now();
-    const cooldown = 15 * 60 * 1000;
-    if (me.lastRoll && now < me.lastRoll) {
-      const r = Math.ceil((me.lastRoll - now) / 1000);
-      const min = Math.floor(r / 60);
-      const sec = r % 60;
-      let timeText = '';
-      if (min > 0) timeText += `${min} minuto${min !== 1 ? 's' : ''} `;
-      if (sec > 0 || timeText === '') timeText += `${sec} segundo${sec !== 1 ? 's' : ''}`;
-      return m.reply(`ꕥ Debes esperar *${timeText.trim()}* para usar *${usedPrefix + 'rw'}* de nuevo.`);
-    }
-    rollLocks.set(userId, now);
     try {
-      const db = await loadCharacters();
-      const all = flattenCharacters(db);
-      const selected = all[Math.floor(Math.random() * all.length)];
-      const id = String(selected.id);
-      const source = getSeriesNameByCharacter(db, selected.id);
-      const baseTag = formatTag(selected.tags?.[0] || '');
-      const mediaList = await buscarImagenDelirius(baseTag);
+      const chat = global.db.data.chats[m.chat];
+      if (chat.adminonly || !chat.gacha) {
+        return m.reply(`ꕥ Los comandos de *Gacha* están desactivados en este grupo.\n\nUn *administrador* puede activarlos con el comando:\n» *${usedPrefix}gacha on*`);
+      }
+      if (!args.length) {
+        return m.reply(`❀ Por favor, proporciona el nombre de un personaje.\n> Ejemplo » *${usedPrefix + command} Yuki Suou*`);
+      }
+      const dbChars = await loadCharacters();
+      const allCharacters = flattenCharacters(dbChars);
+      const nameQuery = args.join(' ').toLowerCase().trim();
+      const character = allCharacters.find(c => String(c.name).toLowerCase() === nameQuery) || allCharacters.find(c => String(c.name).toLowerCase().includes(nameQuery) || (Array.isArray(c.tags) && c.tags.some(tag => tag.toLowerCase().includes(nameQuery)))) || allCharacters.find(c => nameQuery.split(' ').some(q => String(c.name).toLowerCase().includes(q) || (Array.isArray(c.tags) && c.tags.some(tag => tag.toLowerCase().includes(q)))));
+      if (!character) {
+        return m.reply(`ꕥ No se encontró el personaje *${nameQuery}*.`);
+      }
+      const tag = Array.isArray(character.tags) ? character.tags[0] : null;
+      if (!tag) {
+        return m.reply(`ꕥ El personaje *${character.name}* no tiene un tag válido para buscar imágenes.`);
+      }
+      const mediaList = await buscarImagenDelirius(tag);
       const media = mediaList[Math.floor(Math.random() * mediaList.length)];
       if (!media) {
-        rollLocks.delete(userId);
-        return m.reply(`ꕥ No se encontró imágenes para el personaje *${selected.name}*.`);
+        return m.reply(`ꕥ No se encontraron imágenes para *${character.name}* con el tag *${tag}*.`);
       }
-      if (!chat.characters[selected.id]) chat.characters[selected.id] = {};
-      const record = chat.characters[selected.id];
-      const globalRec = global.db.data.characters?.[selected.id] || {};
-      record.name = String(selected.name || 'Sin nombre');
-      record.value = typeof globalRec.value === 'number' ? globalRec.value : Number(selected.value) || 100;
-      record.votes = Number(record.votes || globalRec.votes || 0);
-      record.reservedBy = userId;
-      record.reservedUntil = now + 20000;
-      record.expiresAt = now + 60000;
-      const owner = typeof record?.user === 'string' && record.user.length ? (global.db.data.users?.[record.user]?.name || record.user.split('@')[0]).trim() : 'desconocido';
-      const msg = `❀ Nombre » *${record.name}*\n⚥ Género » *${selected.gender || 'Desconocido'}*\n✰ Valor » *${record.value.toLocaleString()}*\n♡ Estado » *${record.user ? `Reclamado por ${owner}` : 'Libre'}*\n❖ Fuente » *${source}*`;
+      const source = getSeriesNameByCharacter(dbChars, character.id);
+      const msg = `❀ Nombre » *${character.name}*\n⚥ Género » *${character.gender || 'Desconocido'}*\n❖ Fuente » *${source}*`;
       const imgRes = await axios.get(media, { responseType: 'arraybuffer', timeout: 15000, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Referer': getRefererForUrl(media) } });
       const buffer = Buffer.from(imgRes.data);
-      const sent = await client.sendMessage(chatId, { image: buffer, caption: msg }, { quoted: m });
-      chat.rolls[sent.key.id] = { id, name: record.name, expiresAt: record.expiresAt, reservedBy: userId, reservedUntil: record.reservedUntil };
-      me.lastRoll = now + cooldown;
+      await client.sendMessage(m.chat, { image: buffer, caption: msg }, { quoted: m });
     } catch (e) {
       await m.reply(`> An unexpected error occurred while executing command *${usedPrefix + command}*. Please try again or contact support if the issue persists.\n> [Error: *${e.message}*]`);
-    } finally {
-      rollLocks.delete(userId);
     }
   }
 };
