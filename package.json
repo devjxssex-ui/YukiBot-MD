@@ -1,7 +1,7 @@
 {
-  "name": "yukiwabot",
+  "name": "rockleebot",
   "version": "3.0",
-  "description": "WhatsApp Bot Multi Device",
+  "description": "Bot de WhatsApp estilo Rock Lee 💪🔥 El poder de la juventud",
   "main": "index.js",
   "type": "module",
   "scripts": {
@@ -9,12 +9,12 @@
     "start": "node index.js"
   },
   "keywords": [
+    "rock-lee-bot",
     "whatsapp-bot",
-    "baileys-md",
-    "bot-wa",
-    "multi-device"
+    "anime-bot",
+    "baileys-md"
   ],
-  "author": "iamDestroy",
+  "author": "Devjxssex",
   "license": "MIT",
   "engines": {
     "node": ">=21.7.3",
