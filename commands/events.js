@@ -1,8 +1,15 @@
-
 // events.js - Eventos del bot estilo Rock Lee 🍃
 import fetch from 'node-fetch'
+import path from 'path'
+import fs from 'fs'
+import { fileURLToPath } from 'url'
+
 let WAMessageStubType = (await import('@whiskeysockets/baileys')).default
 import chalk from 'chalk'
+
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+const defaultImage = path.join(__dirname, '../assets/images/default-profile.jpg')
 
 export default async (client, m) => {
   client.ev.on('group-participants.update', async (anu) => {
@@ -18,13 +25,18 @@ export default async (client, m) => {
       for (const p of anu.participants) {
         const jid = p.phoneNumber
         const phone = p.phoneNumber?.split('@')[0] || jid.split('@')[0]
-        const pp = await client.profilePictureUrl(jid, 'image').catch(_ => 'https://cdn.yuki-wabot.my.id/files/2PVh.jpeg')       
+        
+        // 🍃 IMAGEN LOCAL en lugar de URL externa
+        const pp = await client.profilePictureUrl(jid, 'image').catch(() => {
+          return fs.existsSync(defaultImage) ? defaultImage : null
+        })
+        
         const mensajes = { 
           add: chat.sWelcome ? `\n┊➤ ${chat.sWelcome.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '', 
           remove: chat.sGoodbye ? `\n┊➤ ${chat.sGoodbye.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '', 
           leave: chat.sGoodbye ? `\n┊➤ ${chat.sGoodbye.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '' 
         }
-        
+
         const fakeContext = {
           contextInfo: {
             isForwarded: true,
@@ -47,7 +59,7 @@ export default async (client, m) => {
             mentionedJid: [jid]
           }
         }
-        
+
         // 🍃 BIENVENIDA
         if (anu.action === 'add' && chat?.welcome && (!primaryBotId || primaryBotId === botId)) {
           const caption = `🍃 *¡BIENVENIDO AL DOJO!* 🍃
@@ -66,7 +78,7 @@ export default async (client, m) => {
 💚 *"La juventud explota!"*`
          await client.sendMessage(anu.id, { image: { url: pp }, caption, ...fakeContext })     
         }
-        
+
         // 🍃 DESPEDIDA
         if ((anu.action === 'remove' || anu.action === 'leave') && chat?.goodbye && (!primaryBotId || primaryBotId === botId)) {
           const caption = `🍃 *¡HASTA PRONTO!* 🍃
@@ -85,7 +97,7 @@ export default async (client, m) => {
 💪 *"Un ninja verdadero nunca se rinde!"*`
           await client.sendMessage(anu.id, { image: { url: pp }, caption, ...fakeContext })
         }
-        
+
         // 🍃 PROMOVER
         if (anu.action === 'promote' && chat?.alerts && (!primaryBotId || primaryBotId === botId)) {
           const usuario = anu.author
@@ -94,7 +106,7 @@ export default async (client, m) => {
             mentions: [jid, usuario, ...groupAdmins.map(v => v.id)] 
           })
         }
-        
+
         // 🍃 DEGRADAR
         if (anu.action === 'demote' && chat?.alerts && (!primaryBotId || primaryBotId === botId)) {
           const usuario = anu.author
@@ -108,7 +120,7 @@ export default async (client, m) => {
       console.log(chalk.gray(`🍃 Evento error: ${err}`))
     }
   })
-  
+
   client.ev.on('messages.upsert', async ({ messages }) => {
   const m = messages[0]
   if (!m.messageStubType) return
@@ -123,7 +135,7 @@ export default async (client, m) => {
   const phone = actor.split('@')[0]
   const groupMetadata = await client.groupMetadata(id).catch(() => null)
   const groupAdmins = groupMetadata?.participants.filter(p => (p.admin === 'admin' || p.admin === 'superadmin')) || []
-  
+
   // 🍃 CAMBIO DE NOMBRE
   if (m.messageStubType == 21) {
     await client.sendMessage(id, { 
@@ -131,7 +143,7 @@ export default async (client, m) => {
       mentions: [actor, ...groupAdmins.map(v => v.id)] 
     })
   }
-  
+
   // 🍃 CAMBIO DE ICONO
   if (m.messageStubType == 22) {
     await client.sendMessage(id, { 
@@ -139,7 +151,7 @@ export default async (client, m) => {
       mentions: [actor, ...groupAdmins.map(v => v.id)] 
     })
   }
-  
+
   // 🍃 CAMBIO DE ENLACE
   if (m.messageStubType == 23) {
     await client.sendMessage(id, { 
@@ -147,7 +159,7 @@ export default async (client, m) => {
       mentions: [actor, ...groupAdmins.map(v => v.id)] 
     })
   }
-  
+
   // 🍃 CAMBIO DE DESCRIPCIÓN
   if (m.messageStubType == 24) {
     await client.sendMessage(id, { 
@@ -155,7 +167,7 @@ export default async (client, m) => {
       mentions: [actor, ...groupAdmins.map(v => v.id)] 
     })
   }
-  
+
   // 🍃 CAMBIO DE CONFIGURACIÓN
   if (m.messageStubType == 25) {
     await client.sendMessage(id, { 
@@ -163,7 +175,7 @@ export default async (client, m) => {
       mentions: [actor, ...groupAdmins.map(v => v.id)] 
     })
   }
-  
+
   // 🍃 CAMBIO DE MENSAJES
   if (m.messageStubType == 26) {
     await client.sendMessage(id, { 
