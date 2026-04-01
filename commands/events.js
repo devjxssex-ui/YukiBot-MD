@@ -1,3 +1,5 @@
+
+// events.js - Eventos del bot estilo Rock Lee 🍃
 import fetch from 'node-fetch'
 let WAMessageStubType = (await import('@whiskeysockets/baileys')).default
 import chalk from 'chalk'
@@ -17,68 +19,96 @@ export default async (client, m) => {
         const jid = p.phoneNumber
         const phone = p.phoneNumber?.split('@')[0] || jid.split('@')[0]
         const pp = await client.profilePictureUrl(jid, 'image').catch(_ => 'https://cdn.yuki-wabot.my.id/files/2PVh.jpeg')       
-        const mensajes = { add: chat.sWelcome ? `\n┊➤ ${chat.sWelcome.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '', remove: chat.sGoodbye ? `\n┊➤ ${chat.sGoodbye.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '', leave: chat.sGoodbye ? `\n┊➤ ${chat.sGoodbye.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '' }
+        const mensajes = { 
+          add: chat.sWelcome ? `\n┊➤ ${chat.sWelcome.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '', 
+          remove: chat.sGoodbye ? `\n┊➤ ${chat.sGoodbye.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '', 
+          leave: chat.sGoodbye ? `\n┊➤ ${chat.sGoodbye.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '' 
+        }
+        
         const fakeContext = {
           contextInfo: {
             isForwarded: true,
             forwardedNewsletterMessageInfo: {
-              newsletterJid: global.db.data.settings[botId].id,
+              newsletterJid: global.db.data.settings[botId]?.id,
               serverMessageId: '0',
-              newsletterName: global.db.data.settings[botId].nameid
+              newsletterName: global.db.data.settings[botId]?.nameid || 'Rock Lee Bot 🍃'
             },
             externalAdReply: {
-              title: global.db.data.settings[botId].namebot,
-              body: dev,
+              title: global.db.data.settings[botId]?.namebot || 'Rock Lee Bot',
+              body: global.dev || '🍃 El ninja de la hoja verde',
               mediaUrl: null,
               description: null,
               previewType: 'PHOTO',
-              thumbnailUrl: global.db.data.settings[botId].icon,
-              sourceUrl: global.db.data.settings[client.user.id.split(':')[0] + "@s.whatsapp.net"].link,
+              thumbnailUrl: global.db.data.settings[botId]?.icon || '',
+              sourceUrl: global.db.data.settings[client.user.id.split(':')[0] + "@s.whatsapp.net"]?.link || '',
               mediaType: 1,
               renderLargerThumbnail: false
             },
             mentionedJid: [jid]
           }
         }
+        
+        // 🍃 BIENVENIDA
         if (anu.action === 'add' && chat?.welcome && (!primaryBotId || primaryBotId === botId)) {
-          const caption = `╭┈──̇─̇─̇────̇─̇─̇──◯◝
-┊「 *Bienvenido (⁠ ⁠ꈍ⁠ᴗ⁠ꈍ⁠)* 」
+          const caption = `🍃 *¡BIENVENIDO AL DOJO!* 🍃
+          
+╭┈──̇─̇─̇────̇─̇─̇──◯◝
+┊「 *Bienvenido ${metadata.subject}* 」
 ┊︶︶︶︶︶︶︶︶︶︶︶
 ┊  *Nombre ›* @${phone}
 ┊  *Grupo ›* ${metadata.subject}
 ┊┈─────̇─̇─̇─────◯◝
-┊➤ *Usa /menu para ver los comandos.*
+┊➤ *Usa !menu para ver las técnicas ninja.*
 ┊➤ *Ahora somos ${memberCount} miembros.* ${mensajes[anu.action]}
 ┊ ︿︿︿︿︿︿︿︿︿︿︿
-╰─────────────────╯`
+╰─────────────────╯
+
+💚 *"La juventud explota!"*`
          await client.sendMessage(anu.id, { image: { url: pp }, caption, ...fakeContext })     
         }
+        
+        // 🍃 DESPEDIDA
         if ((anu.action === 'remove' || anu.action === 'leave') && chat?.goodbye && (!primaryBotId || primaryBotId === botId)) {
-          const caption = `╭┈──̇─̇─̇────̇─̇─̇──◯◝
-┊「 *Hasta pronto (⁠╥⁠﹏⁠╥⁠)* 」
+          const caption = `🍃 *¡HASTA PRONTO!* 🍃
+          
+╭┈──̇─̇─̇────̇─̇─̇──◯◝
+┊「 *Hasta pronto ninja* 」
 ┊︶︶︶︶︶︶︶︶︶︶︶
 ┊  *Nombre ›* @${phone}
 ┊  *Grupo ›* ${metadata.subject}
 ┊┈─────̇─̇─̇─────◯◝
-┊➤ *Ojalá que vuelva pronto.*
+┊➤ *Ojalá que vuelvas pronto a entrenar.*
 ┊➤ *Ahora somos ${memberCount} miembros.* ${mensajes[anu.action]}
 ┊ ︿︿︿︿︿︿︿︿︿︿︿
-╰─────────────────╯`
+╰─────────────────╯
+
+💪 *"Un ninja verdadero nunca se rinde!"*`
           await client.sendMessage(anu.id, { image: { url: pp }, caption, ...fakeContext })
         }
+        
+        // 🍃 PROMOVER
         if (anu.action === 'promote' && chat?.alerts && (!primaryBotId || primaryBotId === botId)) {
           const usuario = anu.author
-          await client.sendMessage(anu.id, { text: `「✎」 *@${phone}* ha sido promovido a Administrador por *@${usuario.split('@')[0]}.*`, mentions: [jid, usuario, ...groupAdmins.map(v => v.id)] })
+          await client.sendMessage(anu.id, { 
+            text: `🍃 *ASCENSO EN EL DOJO* 🍃\n\n⚡ *@${phone}* ha sido promovido a *Administrador* por *@${usuario.split('@')[0]}*\n\n💚 *"El trabajo duro vence al talento!"*`, 
+            mentions: [jid, usuario, ...groupAdmins.map(v => v.id)] 
+          })
         }
+        
+        // 🍃 DEGRADAR
         if (anu.action === 'demote' && chat?.alerts && (!primaryBotId || primaryBotId === botId)) {
           const usuario = anu.author
-          await client.sendMessage(anu.id, { text: `「✎」 *@${phone}* ha sido degradado de Administrador por *@${usuario.split('@')[0]}.*`, mentions: [jid, usuario, ...groupAdmins.map(v => v.id)] })
+          await client.sendMessage(anu.id, { 
+            text: `🍃 *DEGRADACIÓN* 🍃\n\n⚡ *@${phone}* ha sido degradado de *Administrador* por *@${usuario.split('@')[0]}*\n\n💚 *"Sigue entrenando, algún día volverás a ser admin"*`, 
+            mentions: [jid, usuario, ...groupAdmins.map(v => v.id)] 
+          })
         }
       }
     } catch (err) {
-      console.log(chalk.gray(`[ BOT  ]  → ${err}`))
+      console.log(chalk.gray(`🍃 Evento error: ${err}`))
     }
   })
+  
   client.ev.on('messages.upsert', async ({ messages }) => {
   const m = messages[0]
   if (!m.messageStubType) return
@@ -93,23 +123,53 @@ export default async (client, m) => {
   const phone = actor.split('@')[0]
   const groupMetadata = await client.groupMetadata(id).catch(() => null)
   const groupAdmins = groupMetadata?.participants.filter(p => (p.admin === 'admin' || p.admin === 'superadmin')) || []
+  
+  // 🍃 CAMBIO DE NOMBRE
   if (m.messageStubType == 21) {
-    await client.sendMessage(id, { text: `「✎」 @${phone} cambió el nombre del grupo a *${m.messageStubParameters[0]}*`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+    await client.sendMessage(id, { 
+      text: `🍃 *CAMBIO DE NOMBRE* 🍃\n\n⚡ *@${phone}* cambió el nombre del dojo a:\n📛 *${m.messageStubParameters[0]}*\n\n💚 *"La juventud explota!"*`, 
+      mentions: [actor, ...groupAdmins.map(v => v.id)] 
+    })
   }
+  
+  // 🍃 CAMBIO DE ICONO
   if (m.messageStubType == 22) {
-    await client.sendMessage(id, { text: `「✎」 @${phone} cambió el icono del grupo.`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+    await client.sendMessage(id, { 
+      text: `🍃 *CAMBIO DE ICONO* 🍃\n\n⚡ *@${phone}* cambió el ícono del dojo.\n\n💚 *"El trabajo duro vence al talento!"*`, 
+      mentions: [actor, ...groupAdmins.map(v => v.id)] 
+    })
   }
+  
+  // 🍃 CAMBIO DE ENLACE
   if (m.messageStubType == 23) {
-    await client.sendMessage(id, { text: `「✎」 @${phone} restableció el enlace del grupo.`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+    await client.sendMessage(id, { 
+      text: `🍃 *ENLACE RENOVADO* 🍃\n\n⚡ *@${phone}* restableció el enlace del grupo.\n\n💚 *"Un ninja verdadero nunca se rinde!"*`, 
+      mentions: [actor, ...groupAdmins.map(v => v.id)] 
+    })
   }
+  
+  // 🍃 CAMBIO DE DESCRIPCIÓN
   if (m.messageStubType == 24) {
-    await client.sendMessage(id, { text: `「✎」 @${phone} cambió la descripción del grupo.`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+    await client.sendMessage(id, { 
+      text: `🍃 *CAMBIO DE DESCRIPCIÓN* 🍃\n\n⚡ *@${phone}* cambió la descripción del dojo.\n\n💚 *"La juventud nunca falla!"*`, 
+      mentions: [actor, ...groupAdmins.map(v => v.id)] 
+    })
   }
+  
+  // 🍃 CAMBIO DE CONFIGURACIÓN
   if (m.messageStubType == 25) {
-    await client.sendMessage(id, { text: `「✎」 @${phone} cambió los ajustes del grupo para permitir que ${m.messageStubParameters[0] == 'on' ? 'solo admins' : 'todos'} puedan configurar el grupo.`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+    await client.sendMessage(id, { 
+      text: `🍃 *CONFIGURACIÓN ACTUALIZADA* 🍃\n\n⚡ *@${phone}* cambió los ajustes: ahora ${m.messageStubParameters[0] == 'on' ? 'solo admins' : 'todos'} pueden configurar el grupo.\n\n💚 *"El poder de la juventud!"*`, 
+      mentions: [actor, ...groupAdmins.map(v => v.id)] 
+    })
   }
+  
+  // 🍃 CAMBIO DE MENSAJES
   if (m.messageStubType == 26) {
-    await client.sendMessage(id, { text: `「✎」 @${phone} cambió los ajustes del grupo para permitir que ${m.messageStubParameters[0] === 'on' ? 'solo los administradores puedan enviar mensajes al grupo.' : 'todos los miembros puedan enviar mensajes al grupo.'}`, mentions: [actor, ...groupAdmins.map(v => v.id)] })
+    await client.sendMessage(id, { 
+      text: `🍃 *GRUPO ACTUALIZADO* 🍃\n\n⚡ *@${phone}* cambió los ajustes: ahora ${m.messageStubParameters[0] === 'on' ? 'solo administradores pueden enviar mensajes' : 'todos los miembros pueden enviar mensajes'}.\n\n💚 *"Sigue entrenando duro!"*`, 
+      mentions: [actor, ...groupAdmins.map(v => v.id)] 
+    })
   }
 })
 }
