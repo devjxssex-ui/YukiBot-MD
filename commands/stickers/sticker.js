@@ -1,3 +1,4 @@
+// sticker.js - Creador de stickers estilo Rock Lee 🍃
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
@@ -6,23 +7,70 @@ import exif from '../../lib/exif.js';
 const { writeExif } = exif;
 
 export default {
-  command: ['sticker', 's'],
+  command: ['sticker', 's', 'stiker'],
   category: 'stickers',
   run: async (client, m, args, usedPrefix, command) => {
     try {
       if (args[0] === '-list') {
-        let helpText = `ꕥ Lista de Formas y Efectos Disponibles para *imagen*:\n\n✦ *Formas:*\n- -c : Crea un sticker circular\n- -t : Crea un sticker triangular\n- -s : Crea un sticker con forma de estrella\n- -r : Crea un sticker con esquinas redondeadas\n- -h : Crea un sticker hexagonal\n- -d : Crea un sticker con forma de diamante\n- -f : Crea un sticker con un marco\n- -b : Crea un sticker con un borde\n- -w : Crea un sticker con forma de onda\n- -m : Crea un sticker espejado\n- -o : Crea un sticker octogonal\n- -y : Crea un sticker pentagonal\n- -e : Crea un sticker elíptico\n- -z : Crea un sticker en forma de cruz\n- -v : Crea un sticker con forma de corazón\n- -x : Crea un sticker expandido (cover)\n- -i : Crea un sticker expandido (contain)\n\n✧ *Efectos:*\n- -blur : Aplica un efecto de desenfoque\n- -sepia : Aplica un efecto sepia\n- -sharpen : Aplica un efecto de nitidez\n- -brighten : Aumenta el brillo\n- -darken : Disminuye el brillo\n- -invert : Invierte los colores\n- -grayscale : Aplica escala de grises\n- -rotate90 : Rota la imagen 90 grados\n- -rotate180 : Rota la imagen 180 grados\n- -flip : Invierte la imagen horizontalmente\n- -flop : Invierte la imagen verticalmente\n- -normalice : Normaliza la imagen\n- -negate : Negatiza la imagen\n- -tint : Aplica un tinte de color a la imagen (rojo por defecto)\n\n> Ejemplo: *${usedPrefix + command} -c -blur Pack | Autor*`;
+        let helpText = `🍃 *TÉCNICAS NINJA PARA STICKERS* 🍃
+
+╭┈──̇─̇─̇────̇─̇─̇──◯◝
+┊「 *Formas* 」
+┊︶︶︶︶︶︶︶︶︶︶︶
+┊  -c : 🟢 Circular
+┊  -t : 🔺 Triangular
+┊  -s : ⭐ Estrella
+┊  -r : 🟫 Esquinas redondeadas
+┊  -h : ⬡ Hexagonal
+┊  -d : 🔷 Diamante
+┊  -f : 🖼️ Marco
+┊  -b : 📦 Borde
+┊  -w : 🌊 Onda
+┊  -m : 🪞 Espejado
+┊  -o : 🔶 Octogonal
+┊  -y : 🔷 Pentagonal
+┊  -e : 🥚 Elíptico
+┊  -z : ✝️ Cruz
+┊  -v : ❤️ Corazón
+┊  -x : 📐 Expandido (cover)
+┊  -i : 📏 Expandido (contain)
+
+┊「 *Efectos* 」
+┊︶︶︶︶︶︶︶︶︶︶︶
+┊  -blur : 🌫️ Desenfoque
+┊  -sepia : 🟤 Sepia
+┊  -sharpen : ✨ Nitidez
+┊  -brighten : ☀️ Brillar
+┊  -darken : 🌙 Oscurecer
+┊  -invert : 🔄 Invertir colores
+┊  -grayscale : ⚪ Escala de grises
+┊  -rotate90 : 🔄 Rotar 90°
+┊  -rotate180 : 🔄 Rotar 180°
+┊  -flip : ↔️ Voltear horizontal
+┊  -flop : ↕️ Voltear vertical
+┊  -normalice : 📊 Normalizar
+┊  -negate : 🎭 Negativo
+┊  -tint : 🎨 Tinte rojo
+
+┊「 *Ejemplo* 」
+┊︶︶︶︶︶︶︶︶︶︶︶
+┊  *${usedPrefix + command} -c -blur Pack | Autor*
+╰─────────────────╯
+
+💚 *"La juventud explota en stickers!"*`;
         return client.reply(m.chat, helpText, m);
       }
+      
       const quoted = m.quoted ? m.quoted : m;
       const mime = (quoted.msg || quoted).mimetype || '';
       const db = global.db.data
       const user = db.users[m.sender] || {}
-      const name = user.name;
+      const name = user.name || m.sender.split('@')[0];
       const meta1 = user.metadatos ? String(user.metadatos).trim() : '';
       const meta2 = user.metadatos2 ? String(user.metadatos2).trim() : '';
-      let texto1 = meta1 ? meta1 : `ʏᴜᴋɪ 🧠 Wᴀʙᴏᴛ`;
-      let texto2 = meta1 ? (meta2 ? meta2 : '') : `@${name}`;
+      let texto1 = meta1 ? meta1 : 'Rock Lee Bot 🍃';
+      let texto2 = meta2 ? meta2 : (name || 'El ninja de la hoja verde');
+      
       let urlArg = null;
       let argsWithoutUrl = [];
       for (let arg of args) {
@@ -32,24 +80,31 @@ export default {
           argsWithoutUrl.push(arg);
         }
       }
+      
       let filteredText = argsWithoutUrl.join(' ').replace(/-\w+/g, '').trim();
       let marca = filteredText.split(/[\u2022|]/).map(part => part.trim());
       let pack = marca[0] || texto1;
       let author = marca.length > 1 ? marca[1] : texto2;
+      
       const shapeArgs = { '-c': 'circle', '-t': 'triangle', '-s': 'star', '-r': 'roundrect', '-h': 'hexagon', '-d': 'diamond', '-f': 'frame', '-b': 'border', '-w': 'wave', '-m': 'mirror', '-o': 'octagon', '-y': 'pentagon', '-e': 'ellipse', '-z': 'cross', '-v': 'heart', '-x': 'cover', '-i': 'contain' };
       const effectArgs = { '-blur': 'blur', '-sepia': 'sepia', '-sharpen': 'sharpen', '-brighten': 'brighten', '-darken': 'darken', '-invert': 'invert', '-grayscale': 'grayscale', '-rotate90': 'rotate90', '-rotate180': 'rotate180', '-flip': 'flip', '-flop': 'flop', '-normalice': 'normalise', '-negate': 'negate', '-tint': 'tint' };
+      
       const effects = [];
       for (const arg of argsWithoutUrl) {
         if (shapeArgs[arg]) effects.push({ type: 'shape', value: shapeArgs[arg] });
         else if (effectArgs[arg]) effects.push({ type: 'effect', value: effectArgs[arg] });
       }
+      
+      await m.reply(`🍃 *CREANDO STICKER* 🍃\n\n⏳ Procesando técnica ninja...\n\n💚 *"La juventud nunca falla!"*`)
+      
       const sendWebpWithExif = async (webpBuffer) => {
         const media = { mimetype: 'webp', data: webpBuffer };
-        const metadata = { packname: pack, author: author, categories: [''] };
+        const metadata = { packname: pack, author: author, categories: ['🍃', '💚', '⚡'] };
         const stickerPath = await writeExif(media, metadata);
         await client.sendMessage(m.chat, { sticker: { url: stickerPath } }, { quoted: m });
         fs.unlinkSync(stickerPath);
       };
+      
       const convertToGif = async (inputPath) => {
         const gifPath = `./tmp/conv-${Date.now()}.gif`;
         await new Promise((resolve, reject) => {
@@ -60,6 +115,7 @@ export default {
         });
         return gifPath;
       };
+      
       const processWithFFmpeg = async (inputPath, isVideo = false) => {
         const outputPath = `./tmp/sticker-${Date.now()}.webp`;
         const vf = buildFFmpegFilters(effects);
@@ -74,10 +130,12 @@ export default {
         fs.unlinkSync(outputPath);
         await sendWebpWithExif(data);
       };
+      
       const isAnimatedWebp = (buffer) => {
         if (!Buffer.isBuffer(buffer) || buffer.length < 32) return false;
         return buffer.indexOf(Buffer.from('ANIM')) !== -1 || buffer.indexOf(Buffer.from('ANMF')) !== -1;
       };
+      
       const handleWebpBuffer = async (buffer) => {
         const animated = isAnimatedWebp(buffer);
         const inputPath = `./tmp/in-${Date.now()}.webp`;
@@ -97,6 +155,7 @@ export default {
         }
         fs.unlinkSync(inputPath);
       };
+      
       if (/image/.test(mime) || /webp/.test(mime)) {
         let buffer = await quoted.download();
         if (/webp/.test(mime)) {
@@ -109,8 +168,9 @@ export default {
           fs.unlinkSync(inputPath);
         }
       } else if (/video/.test(mime)) {
-        if ((quoted.msg || quoted).seconds > 20) {
-          return m.reply('《✧》 El video no puede ser muy largo');
+        const duration = (quoted.msg || quoted).seconds || 0;
+        if (duration > 20) {
+          return m.reply(`🍃 *VIDEO DEMASIADO LARGO* 🍃\n\n❌ El video no puede tener más de *20 segundos*.\n\n📌 *Duración:* ${duration} segundos\n\n💚 *"Un ninja usa clips cortos y precisos!"*`);
         }
         let buffer = await quoted.download();
         const inputPath = `./tmp/video-${Date.now()}.mp4`;
@@ -120,10 +180,10 @@ export default {
       } else if (urlArg) {
         const url = urlArg;
         if (!url.match(/\.(jpe?g|png|gif|webp|mp4|mov|avi|mkv|webm)(\?.*)?$/i)) {
-          return client.reply(m.chat, '《✧》 La URL debe ser de una imagen (jpg, png, gif, webp) o video (mp4, mov, avi, mkv, webm)', m);
+          return client.reply(m.chat, `🍃 *URL INVÁLIDA* 🍃\n\n❌ La URL debe ser de una imagen (jpg, png, gif, webp) o video (mp4, mov, avi, mkv, webm)\n\n💚 *"Un ninja elige sus herramientas sabiamente!"*`, m);
         }
         const response = await fetch(url);
-        if (!response.ok) return client.reply(m.chat, '《✧》 No pude descargar ese archivo desde la URL.', m);
+        if (!response.ok) return client.reply(m.chat, `🍃 *ERROR DE DESCARGA* 🍃\n\n❌ No pude descargar ese archivo desde la URL.\n\n💚 *"Un ninja verifica sus enlaces!"*`, m);
         const buffer = Buffer.from(await response.arrayBuffer());
         if (url.match(/\.webp(\?.*)?$/i)) {
           await handleWebpBuffer(buffer);
@@ -140,10 +200,11 @@ export default {
           fs.unlinkSync(inputPath);
         }
       } else {
-        return client.reply(m.chat, `《✧》 Por favor, envía una imagen, video, sticker o URL para hacer un sticker.\n> Usa *${usedPrefix + command} -list* para ver formas y efectos`, m);
+        return client.reply(m.chat, `🍃 *CREAR STICKER* 🍃\n\n❓ *Formas de uso:*\n\n📌 *Imagen/Video:* Responde a un archivo\n📌 *URL:* ${usedPrefix}${command} https://ejemplo.com/imagen.jpg\n📌 *Efectos:* ${usedPrefix}${command} -c -blur\n\n📌 *Ver formas y efectos:* ${usedPrefix}${command} -list\n\n💚 *"La juventud explota en stickers!"*`, m);
       }
     } catch (e) {
-      return m.reply(`> An unexpected error occurred while executing command *${usedPrefix + command}*. Please try again or contact support if the issue persists.\n> [Error: *${e.message}*]`);
+      console.error('Error en sticker:', e);
+      return m.reply(`🍃 *ERROR NINJA* 🍃\n\n❌ Ocurrió un error al crear el sticker.\n\n📌 *Detalle:* ${e.message.slice(0, 100)}\n\n💚 *"Un ninja verdadero intenta de nuevo!"*`);
     }
   }
 };
@@ -158,13 +219,16 @@ const buildFFmpegFilters = (effects, isVideo = false) => {
   const filters = [];
   const shape = effects.find(e => e.type === 'shape')?.value;
   const effectList = effects.filter(e => e.type === 'effect').map(e => e.value);
+  
   if (shape === 'cover') {
     filters.push(`scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H}`);
   } else {
     filters.push(`scale=${W}:${H}:force_original_aspect_ratio=decrease`);
     filters.push(`pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:color=0x00000000`);
   }
+  
   filters.push('format=rgba');
+  
   for (const effect of effectList) {
     switch (effect) {
       case 'blur': filters.push('gblur=sigma=5'); break;
@@ -182,7 +246,9 @@ const buildFFmpegFilters = (effects, isVideo = false) => {
       case 'tint': filters.push('colorchannelmixer=1:0:0:0:0:0.5:0:0:0:0:0.5'); break;
     }
   }
+  
   if (shape === 'mirror') filters.push('hflip');
+  
   if (shape && !['cover', 'contain', 'mirror', 'border', 'frame'].includes(shape)) {
     const cx = W / 2;
     const cy = H / 2;
@@ -204,8 +270,10 @@ const buildFFmpegFilters = (effects, isVideo = false) => {
     }
     if (alphaExpr) filters.push(`geq=r='r(X,Y)':g='g(X,Y)':b='b(X,Y)':a='${alphaExpr}'`);
   }
+  
   if (shape === 'border') filters.push(`drawbox=x=0:y=0:w=${W}:h=${H}:color=white@0.9:t=10`);
   if (shape === 'frame') filters.push(`drawbox=x=15:y=15:w=${W - 30}:h=${H - 30}:color=white@0.7:t=8`);
+  
   filters.push('format=yuva420p');
   return filters.join(',');
 };
