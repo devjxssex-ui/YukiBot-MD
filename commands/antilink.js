@@ -1,5 +1,8 @@
+// antilink.js - Sistema Anti-Link estilo Rock Lee 🍃
 const linkRegex = /(https?:\/\/)?(chat\.whatsapp\.com\/[0-9A-Za-z]{20,24}|whatsapp\.com\/channel\/[0-9A-Za-z]{20,24})/i
-const allowedLinks = ['https://whatsapp.com/channel/0029Vb64nWqLo4hb8cuxe23n']
+
+// 🍃 Enlaces permitidos (canal oficial de Rock Lee)
+const allowedLinks = ['https://whatsapp.com/channel/0029VbCogMA4IBh8kqwcES2c']
 
 export default async (client, m) => {
 if (!m.isGroup || !m.text) return
@@ -18,11 +21,42 @@ const isPrimary = !primaryBotId || primaryBotId === botId
 const isGroupLink = linkRegex.test(m.text)
 const hasAllowedLink = allowedLinks.some(link => m.text.includes(link))
 const command = (m.noPrefix?.trim().split(/\s+/)[0] || '').toLowerCase()
+
+// 🍃 Si es admin o enlace permitido, no hacer nada
 if (hasAllowedLink || !isGroupLink || !chat?.antilinks || isAdmin || !isBotAdmin || !isPrimary) return
-await client.sendMessage(m.chat, { delete: { remoteJid: m.chat, fromMe: false, id: m.key.id, participant: m.key.participant }})
+
+// 🍃 Eliminar mensaje con enlace
+await client.sendMessage(m.chat, { 
+  delete: { 
+    remoteJid: m.chat, 
+    fromMe: false, 
+    id: m.key.id, 
+    participant: m.key.participant 
+  }
+})
+
 if (!(command === 'invite')) {
 const isChannelLink = /whatsapp\.com\/channel\//i.test(m.text)
-const userName = global.db.data.users[m.sender]?.name || 'Usuario'
-await client.reply(m.chat, `> ꕥ Se ha eliminado a *${userName}* del grupo por \`Anti-Link\`, no permitimos enlaces de *${isChannelLink ? 'canales' : 'otros grupos'}*.`, null)
+const userName = global.db.data.users[m.sender]?.name || 'Ninja Desconocido'
+
+// 🍃 Mensaje de expulsión estilo Rock Lee
+const warningMessage = `🍃 *¡ANTI-LINK ACTIVADO!* 🍃
+
+╭┈──̇─̇─̇────̇─̇─̇──◯◝
+┊「 *Técnica prohibida* 」
+┊︶︶︶︶︶︶︶︶︶︶︶
+┊  *Ninja ›* ${userName}
+┊  *Infracción ›* Enlace de ${isChannelLink ? 'canal' : 'otro grupo'}
+┊  *Castigo ›* Expulsión del dojo
+┊┈─────̇─̇─̇─────◯◝
+┊➤ *No se permiten enlaces externos.*
+┊➤ *Solo el enlace oficial está autorizado.*
+┊ ︿︿︿︿︿︿︿︿︿︿︿
+╰─────────────────╯
+
+💚 *"Un ninja verdadero respeta las reglas del dojo!"*`
+
+await client.reply(m.chat, warningMessage, null)
 await client.groupParticipantsUpdate(m.chat, [m.sender], 'remove')
-}}
+}
+}
