@@ -1,7 +1,7 @@
 import "./settings.js";
 import main from './main.js';
 import events from './commands/events.js';
-import { Browsers, makeWASocket, makeCacheableSignalKeyStore, useMultiFileAuthState, fetchLatestBaileysVersion, jidDecode, DisconnectReason } from "@whiskeysockets/baileys";
+import { Browsers, makeWASocket, makeCacheableSignalKeyStore, useMultiFileAuthState, jidDecode, DisconnectReason } from "@whiskeysockets/baileys";
 import cfonts from 'cfonts';
 import pino from "pino";
 import qrcode from "qrcode-terminal";
@@ -82,7 +82,8 @@ console.log(chalk.green.bold("\n    🍃 EL NINJA DE LA HOJA VERDE 🍃\n"))
 console.log(chalk.gray("═".repeat(65)))
 console.log(chalk.cyan(`\n    📱 Versión: ${global.version || "1.0.0"}`))
 console.log(chalk.cyan(`    👤 Owner: ${global.owner?.join(", ") || "Rock Lee"}`))
-console.log(chalk.cyan(`    🎯 Estado: Iniciando...\n`))
+console.log(chalk.cyan(`    🎯 Estado: Iniciando...`))
+console.log(chalk.cyan(`    🔧 Modo: Sin APIs - Solo Scrapers\n`))
 console.log(chalk.gray("═".repeat(65)))
 console.log()
 
@@ -189,7 +190,8 @@ let reconexion = 0;
 const intentos = 15;
 async function startBot() {
   const { state, saveCreds } = await useMultiFileAuthState(global.sessionName);
-  const { version } = await fetchLatestBaileysVersion();
+  // Versión fija de Baileys - SIN API de fetchLatestBaileysVersion
+  const version = [2, 3000, 1015901307];
   const logger = pino({ level: "silent" });
   console.info = () => {};
   console.debug = () => {};
@@ -199,19 +201,17 @@ async function startBot() {
     printQRInTerminal: false,
     browser: Browsers.macOS('Rock Lee Bot'),
     auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, logger) },
-    markOnlineOnConnect: false,  // 🔥 No mostrar "en línea" - Evita "Esperando mensaje"
+    markOnlineOnConnect: false,
     generateHighQualityLinkPreview: false,
     syncFullHistory: false,
     getMessage: async () => "",
     keepAliveIntervalMs: 45000,
     maxIdleTimeMs: 60000,
-    // 🔥 Opciones para evitar "Esperando mensaje"
     options: {
       noPresence: true
     }
   });
   
-  // 🔥 Ignorar actualizaciones de presencia (evita "Esperando mensaje")
   sock.ev.on("presence.update", () => {});
   
   global.client = sock;
@@ -285,6 +285,7 @@ async function startBot() {
       console.log(chalk.green.bold(`\n✅ ¡BOT CONECTADO! 🍃`));
       console.log(chalk.blue(`📱 Conectado como: ${userName}`));
       console.log(chalk.blue(`🎮 Prefijos: ! . # /`));
+      console.log(chalk.cyan(`🔧 Modo: Sin APIs - Scrapers activos`));
       console.log(chalk.green(`\n💚 ¡LA JUVENTUD EXPLOTA! 💚\n`));
     }
     if (isNewLogin) log.info("🆕 Nuevo dispositivo detectado");
