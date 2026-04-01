@@ -11,6 +11,11 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const defaultImage = path.join(__dirname, '../assets/images/default-profile.jpg')
 
+// 🍃 Iconos por defecto de Rock Lee
+const DEFAULT_WELCOME_ICON = 'https://files.catbox.moe/7m6zl6.jpg'
+const DEFAULT_GOODBYE_ICON = 'https://files.catbox.moe/kq3qfy.jpg'
+const DEFAULT_ICON = 'https://files.catbox.moe/zkerqt.jpg'
+
 export default async (client, m) => {
   client.ev.on('group-participants.update', async (anu) => {
     try {
@@ -22,15 +27,16 @@ export default async (client, m) => {
       const memberCount = metadata.participants.length      
       const isSelf = global.db.data.settings[botId]?.self ?? false
       if (isSelf) return
+      
       for (const p of anu.participants) {
         const jid = p.phoneNumber
         const phone = p.phoneNumber?.split('@')[0] || jid.split('@')[0]
-        
+
         // 🍃 IMAGEN LOCAL en lugar de URL externa
         const pp = await client.profilePictureUrl(jid, 'image').catch(() => {
           return fs.existsSync(defaultImage) ? defaultImage : null
         })
-        
+
         const mensajes = { 
           add: chat.sWelcome ? `\n┊➤ ${chat.sWelcome.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '', 
           remove: chat.sGoodbye ? `\n┊➤ ${chat.sGoodbye.replace(/{usuario}/g, `@${phone}`).replace(/{grupo}/g, `*${metadata.subject}*`).replace(/{desc}/g, metadata?.desc || '✿ Sin Desc ✿')}` : '', 
@@ -51,7 +57,7 @@ export default async (client, m) => {
               mediaUrl: null,
               description: null,
               previewType: 'PHOTO',
-              thumbnailUrl: global.db.data.settings[botId]?.icon || '',
+              thumbnailUrl: global.db.data.settings[botId]?.icon || DEFAULT_ICON,
               sourceUrl: global.db.data.settings[client.user.id.split(':')[0] + "@s.whatsapp.net"]?.link || '',
               mediaType: 1,
               renderLargerThumbnail: false
@@ -60,7 +66,7 @@ export default async (client, m) => {
           }
         }
 
-        // 🍃 BIENVENIDA
+        // 🍃 BIENVENIDA con icono de Rock Lee
         if (anu.action === 'add' && chat?.welcome && (!primaryBotId || primaryBotId === botId)) {
           const caption = `🍃 *¡BIENVENIDO AL DOJO!* 🍃
           
@@ -76,10 +82,10 @@ export default async (client, m) => {
 ╰─────────────────╯
 
 💚 *"La juventud explota!"*`
-         await client.sendMessage(anu.id, { image: { url: pp }, caption, ...fakeContext })     
+         await client.sendMessage(anu.id, { image: { url: DEFAULT_WELCOME_ICON }, caption, ...fakeContext })     
         }
 
-        // 🍃 DESPEDIDA
+        // 🍃 DESPEDIDA con icono de Rock Lee
         if ((anu.action === 'remove' || anu.action === 'leave') && chat?.goodbye && (!primaryBotId || primaryBotId === botId)) {
           const caption = `🍃 *¡HASTA PRONTO!* 🍃
           
@@ -95,7 +101,7 @@ export default async (client, m) => {
 ╰─────────────────╯
 
 💪 *"Un ninja verdadero nunca se rinde!"*`
-          await client.sendMessage(anu.id, { image: { url: pp }, caption, ...fakeContext })
+          await client.sendMessage(anu.id, { image: { url: DEFAULT_GOODBYE_ICON }, caption, ...fakeContext })
         }
 
         // 🍃 PROMOVER
