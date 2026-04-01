@@ -1,25 +1,52 @@
+// close.js - Cerrar el dojo (grupo) estilo Rock Lee 🍃
 export default {
-  command: ['closet', 'close', 'cerrar'],
+  command: ['closet', 'close', 'cerrar', 'bloquear'],
   category: 'grupo',
   isAdmin: true,
   botAdmin: true,
   run: async (client, m, args, usedPrefix, command) => {
     try {
       const timeout = args[0] ? msParser(args[0]) : 0
+      
       if (args[0] && !timeout) {
-        return client.reply(m.chat, 'Formato inválido. Usa por ejemplo: 10s, 5m, 2h, 1d', m)
+        return client.reply(m.chat, `🍃 *FORMATO INVÁLIDO* 🍃\n\n❓ Usa: *${usedPrefix + command} <tiempo>*\n\n📌 Ejemplos:\n┊ *${usedPrefix + command} 10s* (10 segundos)\n┊ *${usedPrefix + command} 5m* (5 minutos)\n┊ *${usedPrefix + command} 2h* (2 horas)\n┊ *${usedPrefix + command} 1d* (1 día)\n\n💚 *"Un ninja usa el tiempo con sabiduría"*`, m)
       }
+      
       const groupMetadata = await client.groupMetadata(m.chat)
       const groupAnnouncement = groupMetadata.announce
+      const groupName = groupMetadata.subject || 'este dojo'
+      
       if (groupAnnouncement === true) {
-        return client.reply(m.chat, `《✧》 El grupo ya está cerrado.`, m)
+        return client.reply(m.chat, `🍃 *DOJO CERRADO* 🍃\n\n🔒 El dojo *${groupName}* ya está cerrado.\n\n💚 *"Las puertas ya estaban selladas"*`, m)
       }
+      
       const applyAction = async () => {
         await client.groupSettingUpdate(m.chat, 'announcement')
-        return client.reply(m.chat, `✿ El grupo ha sido cerrado correctamente.`, m)
+        const successMsg = `🍃 *DOJO CERRADO* 🍃
+        
+╭┈──̇─̇─̇────̇─̇─̇──◯◝
+┊「 *${groupName}* 」
+┊︶︶︶︶︶︶︶︶︶︶︶
+┊  *Estado:* 🔒 Cerrado
+┊  *Acceso:* Solo administradores
+┊┈─────̇─̇─̇─────◯◝
+┊➤ *El sensei ha cerrado las puertas del dojo*
+┊➤ *Usa ${usedPrefix}open para abrir*
+┊ ︿︿︿︿︿︿︿︿︿︿︿
+╰─────────────────╯
+
+💚 *"La meditación requiere silencio"*`
+        return client.reply(m.chat, successMsg, m)
       }
+      
       if (timeout > 0) {
-        await client.reply(m.chat, `❀ El grupo se cerrará en ${clockString(timeout)}.`, m)
+        const tiempoStr = clockString(timeout)
+        await client.reply(m.chat, `🍃 *CERRANDO DOJO* 🍃
+        
+⏳ El dojo se cerrará en *${tiempoStr}*.
+
+💚 *"La disciplina requiere paciencia"*`, m)
+        
         setTimeout(async () => {
           try {
             const md = await client.groupMetadata(m.chat)
@@ -30,8 +57,10 @@ export default {
       } else {
         await applyAction()
       }
+      
     } catch (e) {
-      return m.reply(`> An unexpected error occurred while executing command *${usedPrefix + command}*. Please try again or contact support if the issue persists.\n> [Error: *${e.message}*]`)
+      console.error('Error en close:', e)
+      return m.reply(`🍃 *ERROR NINJA* 🍃\n\n❌ Ocurrió un error al cerrar el dojo.\n\n📌 *Detalle:* ${e.message.slice(0, 100)}\n\n💚 *"Un ninja verdadero intenta de nuevo"*`)
     }
   },
 }
