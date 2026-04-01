@@ -45,6 +45,16 @@ global.mess = {
 
 global.APIs = {}  // Vacío - sin APIs externas
 
+// 🍃 Iconos por defecto de Rock Lee
+global.defaultIcon = 'https://files.catbox.moe/zkerqt.jpg'      // Icono principal (#6)
+global.defaultMenuIcon = 'https://files.catbox.moe/twzkhn.jpg'  // Icono para el menú (#2)
+global.defaultBanner = 'https://files.catbox.moe/ikre9z.jpg'    // Banner principal
+global.defaultWelcomeIcon = 'https://files.catbox.moe/7m6zl6.jpg'   // Icono bienvenida
+global.defaultGoodbyeIcon = 'https://files.catbox.moe/kq3qfy.jpg'   // Icono despedida
+global.defaultStickerIcon = 'https://files.catbox.moe/66jxvc.jpg'   // Icono stickers
+global.defaultProfileIcon = 'https://files.catbox.moe/bqev9u.jpg'   // Icono perfil
+global.defaultEconomyIcon = 'https://files.catbox.moe/2io49g.jpg'   // Icono economía
+
 let file = fileURLToPath(import.meta.url)
 watchFile(file, () => {
   unwatchFile(file)
