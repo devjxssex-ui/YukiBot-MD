@@ -1,19 +1,50 @@
+
+// revoke.js - Restablecer enlace del dojo estilo Rock Lee 🍃
 export default {
-  command: ['revoke', 'restablecer'],
+  command: ['revoke', 'restablecer', 'resetlink', 'nuevoenlace'],
   category: 'grupo',
   botAdmin: true,
   run: async (client, m, args, usedPrefix, command) => {
     try {
+      const groupMetadata = await client.groupMetadata(m.chat)
+      const groupName = groupMetadata.subject || 'este dojo'
+      
+      await m.reply(`🍃 *RESTABLECIENDO ENLACE* 🍃\n\n⏳ Generando nueva puerta de entrada al dojo...\n\n📌 *Dojo:* ${groupName}\n\n💚 *"Un nuevo camino para nuevos ninjas"*`)
+      await m.react('🕒')
+      
       await client.groupRevokeInvite(m.chat)
       const code = await client.groupInviteCode(m.chat)
       const link = `https://chat.whatsapp.com/${code}`
-      const teks = `﹒⌗﹒🌿 .ৎ˚₊‧  El enlace del grupo ha sido restablecido:\n\n𐚁 ֹ ִ \`NEW GROUP LINK\` ! ୧ ֹ ִ🔗\n☘️ \`Solicitado por :\` @${m.sender.split('@')[0]}\n\n🌱 \`Enlace :\` ${link}`
-      await m.react('🕒')
+      
+      const teks = `🍃 *NUEVO ENLACE DEL DOJO* 🍃
+      
+╭┈──̇─̇─̇────̇─̇─̇──◯◝
+┊「 *${groupName}* 」
+┊︶︶︶︶︶︶︶︶︶︶︶
+┊  *Solicitado por:* @${m.sender.split('@')[0]}
+┊  *Nuevo enlace:* ${link}
+┊┈─────̇─̇─̇─────◯◝
+┊➤ *El enlace anterior ya no funciona*
+┊➤ *Comparte este nuevo enlace con los nuevos ninjas*
+┊ ︿︿︿︿︿︿︿︿︿︿︿
+╰─────────────────╯
+
+💚 *"La puerta del dojo se ha renovado"*`
+      
       await client.reply(m.chat, teks, m, { mentions: [m.sender] })
-      await m.react('✔️')
+      await m.react('✅')
+      
     } catch (e) {
-      await m.react('✖️')
-      await m.reply(`> An unexpected error occurred while executing command *${usedPrefix + command}*. Please try again or contact support if the issue persists.\n> [Error: *${e.message}*]`)
+      console.error('Error en revoke:', e)
+      await m.react('❌')
+      
+      // 🍃 Mensaje de error específico
+      const errMsg = String(e.message || e)
+      if (errMsg.includes('not-authorized') || errMsg.includes('admin')) {
+        return m.reply(`🍃 *ERROR DE PERMISOS* 🍃\n\n❌ No tengo permisos para restablecer el enlace del grupo.\n\n💚 *"Asegúrate de que el sensei sea administrador"*`)
+      }
+      
+      await m.reply(`🍃 *ERROR NINJA* 🍃\n\n❌ Ocurrió un error al restablecer el enlace del dojo.\n\n📌 *Detalle:* ${errMsg.slice(0, 100)}\n\n💚 *"Un ninja verdadero intenta de nuevo"*`)
     }
   },
 }
