@@ -1,3 +1,4 @@
+// setprimary.js - Establecer bot primario del dojo estilo Rock Lee 🍃
 import { resolveLidToRealJid } from "../../lib/utils.js"
 import fs from 'fs';
 import path from 'path';
@@ -5,6 +6,7 @@ import { fileURLToPath } from 'url'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
+
 const getBotsFromFolder = (folderName) => {
   const basePath = path.join(dirname, '../../Sessions', folderName)
   if (!fs.existsSync(basePath)) return []
@@ -17,36 +19,74 @@ const getAllowedBots = (mainBotJid) => {
 }
 
 export default {
-  command: ['setprimary'],
+  command: ['setprimary', 'setbotprincipal', 'cambiarbot', 'primarybot'],
   category: 'grupo',
   isAdmin: true,
   run: async (client, m, args, usedPrefix, command) => {
     try {
       const chat = global.db.data.chats[m.chat]
+      const groupMetadata = await client.groupMetadata(m.chat).catch(() => null)
+      const groupName = groupMetadata?.subject || 'este dojo'
       const mentioned = m.mentionedJid
       const who2 = mentioned.length > 0 ? mentioned[0] : m.quoted?.sender || false
-     const who = await resolveLidToRealJid(who2, client, m.chat);
+      const who = await resolveLidToRealJid(who2, client, m.chat)
+      
       if (!who2) {
-        return client.reply(m.chat, `《✧》 Por favor menciona un bot para convertirlo en primario.`, m)
+        return m.reply(`🍃 *SET BOT PRINCIPAL* 🍃
+        
+❓ Uso: *${usedPrefix + command} @bot*
+
+📌 Ejemplo: *${usedPrefix + command} @${client.user.id.split(':')[0]}*
+
+💚 *"Un dojo necesita un sensei principal que lo guíe"*`)
       }
-      const groupMetadata = m.isGroup ? await client.groupMetadata(m.chat).catch(() => {}) : ''
+      
       const groupParticipants = groupMetadata?.participants?.map((p) => p.phoneNumber || p.jid || p.id || p.lid) || []
       const mainBotJid = global.client.user.id.split(':')[0] + '@s.whatsapp.net'
       const allowedBots = getAllowedBots(mainBotJid)
+      const botName = global.db.data.settings[who]?.namebot || who.split('@')[0]
+      
+      // 🍃 Verificar si es un bot válido
       if (!allowedBots.includes(who)) {
-        return client.reply(m.chat, `《✧》 El usuario mencionado no es una instancia de Sub-Bot.`, m)
+        return m.reply(`🍃 *NO ES UN BOT VÁLIDO* 🍃\n\n❌ El usuario mencionado no es una instancia de Sub-Bot.\n\n💚 *"Solo los aprendices del sensei pueden ser líderes del dojo"*`)
       }
+      
+      // 🍃 Verificar si está en el grupo
       if (!groupParticipants.includes(who)) {
-        return client.reply(m.chat, `《✧》 El bot mencionado no está presente en este grupo.`, m)
+        return m.reply(`🍃 *BOT NO ENCONTRADO* 🍃\n\n❌ El bot *${botName}* no está presente en este dojo.\n\n💚 *"El sensei debe estar presente para liderar"*`)
       }
+      
+      // 🍃 Verificar si ya es el principal
       if (chat.primaryBot === who) {
-        return client.reply(m.chat, `「✿」 @${who.split('@')[0]} ya es el Bot principal del Grupo.`, m, { mentions: [who] })
+        return m.reply(`🍃 *YA ES EL PRINCIPAL* 🍃\n\n✅ *${botName}* ya es el Sensei principal del dojo *${groupName}*.\n\n💚 *"El líder ya está guiando el camino"*`, { mentions: [who] })
       }
+      
+      const oldPrimary = chat.primaryBot ? global.db.data.settings[chat.primaryBot]?.namebot || chat.primaryBot.split('@')[0] : 'Ninguno'
+      
+      await m.reply(`🍃 *CAMBIANDO SENSEI PRINCIPAL* 🍃\n\n⏳ Procesando técnica de liderazgo...\n\n📌 *Dojo:* ${groupName}\n📌 *Anterior sensei:* ${oldPrimary}\n📌 *Nuevo sensei:* ${botName}\n\n💚 *"Un nuevo líder guiará el destino del dojo"*`)
+      
       chat.primaryBot = who
-      await client.reply(m.chat, `ꕥ Se ha establecido a @${who.split('@')[0]} como bot primario de este grupo.\n> Ahora todos los comandos de este grupo serán ejecutados por @${who.split('@')[0]}.`, m, { mentions: [who] })
+      
+      const successMsg = `🍃 *SENSEI PRINCIPAL ACTUALIZADO* 🍃
+      
+╭┈──̇─̇─̇────̇─̇─̇──◯◝
+┊「 *Dojo: ${groupName}* 」
+┊︶︶︶︶︶︶︶︶︶︶︶
+┊  *Sensei anterior:* ${oldPrimary}
+┊  *Nuevo sensei:* ${botName}
+┊┈─────̇─̇─̇─────◯◝
+┊➤ *Ahora todos los comandos serán ejecutados por ${botName}*
+┊➤ *Que su sabiduría guíe a los ninjas del dojo*
+┊ ︿︿︿︿︿︿︿︿︿︿︿
+╰─────────────────╯
+
+💚 *"${botName}, que la juventud te guíe en esta nueva responsabilidad"*`
+      
+      await m.reply(successMsg, { mentions: [who] })
+      
     } catch (e) {
-      console.error(e)
-      await m.reply(`> An unexpected error occurred while executing command *${usedPrefix + command}*. Please try again or contact support if the issue persists.\n> [Error: *${e.message}*]`)
+      console.error('Error en setprimary:', e)
+      m.reply(`🍃 *ERROR NINJA* 🍃\n\n❌ Ocurrió un error al establecer el bot principal.\n\n📌 *Detalle:* ${e.message.slice(0, 100)}\n\n💚 *"Un ninja verdadero intenta de nuevo"*`)
     }
   },
-};
+}
